@@ -2,16 +2,15 @@ package com.QuantityMeasurementApp;
 
 public enum LengthUnit {
 
-    FEET(12.0),
-    INCHES(1.0);
+	FEET(12.0), INCHES(1.0), YARDS(36.0), CENTIMETERS(0.393701);
 
-    private final double conversionFactor;
+	private final double conversionFactorToInches;
 
-    LengthUnit(double conversionFactor) {
-        this.conversionFactor = conversionFactor;
-    }
+	LengthUnit(double conversionFactorToInches) {
+		this.conversionFactorToInches = conversionFactorToInches;
+	}
 
-    public double getConversionFactor() {
-        return conversionFactor;
-    }
+	public double getConversionFactor() {
+		return conversionFactorToInches;
+	}
 }
