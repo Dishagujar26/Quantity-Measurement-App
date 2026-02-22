@@ -44,4 +44,41 @@
 
 ---
 
+# Quantity Measurement App – UC3 (Generic Quantity Length)
+
+### 📌 Overview
+
+- This module refactors Feet and Inches into a **single generic Length class**.
+- It eliminates code duplication by applying the **DRY (Don’t Repeat Yourself) principle**.
+- Supports equality comparison **across different units** (feet ↔ inches).
+
+
+### ⚙️ Use Case: UC3 – Generic Quantity Length Equality
+
+- Accepts two numerical values along with their respective unit types
+- Converts different units to a **common base unit**
+- Compares values for equality
+- Returns `true` if equivalent, otherwise false
+
+
+### ⚙️ Key Implementation Points
+
+- Uses a **single Length class** to represent all length measurements
+- Introduces a `LengthUnit` **enum** for supported units and conversion factors
+- Eliminates separate Feet and Inches classes
+- Conversion logic is centralized and reusable
+- Measurement value and unit are **encapsulated**
+- `equals()` is overridden for **cross-unit value-based equality**
+- Uses safe floating-point comparison
+- Handles:
+
+  - `null` values
+  - invalid units
+  - same reference checks
+  - type mismatch safely
+  
+---
+
+
+
 
