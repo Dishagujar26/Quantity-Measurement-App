@@ -66,7 +66,7 @@
 - Uses a **single Length class** to represent all length measurements
 - Introduces a `LengthUnit` **enum** for supported units and conversion factors
 - Eliminates separate Feet and Inches classes
-- Conversion logic is centralized and reusable
+- Conversion logic is centralised and reusable
 - Measurement value and unit are **encapsulated**
 - `equals()` is overridden for **cross-unit value-based equality**
 - Uses safe floating-point comparison
@@ -79,6 +79,34 @@
   
 ---
 
+# Quantity Measurement App – UC4 (Extended Unit Support)
 
+### 📌 Overview
+ 
+- This module extends the generic Length class introduced in UC3 by adding support for Yards and Centimeters.
+- It demonstrates how a well-designed generic solution scales to new units without code duplication.
+- Supports equality comparison across `feet ↔ inches ↔ yards ↔ centimeters`.
+
+### ⚙️ Use Case: UC4 – Extended Quantity Length Equality
+
+- Accepts two numerical values along with their respective unit types
+- Supports additional units: `YARDS` and `CENTIMETERS`
+- Converts different units to a common base unit
+- Compares values for equality
+- Returns `true` if equivalent, otherwise `false`
+
+### ⚙️ Key Implementation Points
+
+- Continues using the single generic Length class
+- Extends the existing LengthUnit enum with:
+- YARDS `(1 yard = 3 feet)`
+- CENTIMETERS `(1 cm = 0.393701 inches)`
+- No changes required in Length class logic
+- Conversion logic remains centralised in the enum
+- Measurement value and unit stay encapsulated
+- `equals()` supports cross-unit comparisons seamlessly
+- Uses safe `floating-point comparison`
+
+---
 
 
