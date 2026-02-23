@@ -147,19 +147,19 @@
 
 - This module enables addition operations between two length measurements.
 - It supports adding lengths in the same or different units (within the length category) and returns the result in the unit of the first operand.
-- For example, adding 1 foot and 12 inches yields 2 feet.
+- For example, adding `1 foot` and `12 inches` yields `2 feet`.
 
 ### ⚙️ Use Case: UC6 – Addition of Two Length Units (potentially different units)
 
 - Accepts two numerical values with their respective units.
-- Adds them and returns the sum in the unit of the first operand.
+- Adds them and returns the sum in the unit of the `first operand`.
 
 ### ⚙️ Key Concepts Learned
 
 - Addition of value objects with unit conversion.
-- Immutability and safe handling of operands.
+- `Immutability` and safe handling of operands.
 - Normalisation to a base unit for accurate arithmetic.
-- Floating-point precision management.
+- `Floating-point precision` management.
 - Commutativity and identity element behaviour.
 - Robust validation for null or invalid inputs.
 
@@ -169,24 +169,52 @@
 
 ### 📌 Overview
 
-- This module extends UC6 by allowing the caller to explicitly specify a target unit for addition results.
+- This module extends UC6 by allowing the caller to explicitly specify a `target unit` for addition results.
 - Instead of defaulting to the first operand’s unit, the result can be returned in any supported unit.
--  Example: 1 foot + 12 inches with target unit YARDS ≈ 0.667 yards.
+- Example: `1 foot` + `12 inches` with target unit `YARDS ≈ 0.667 yards`.
 
 ### ⚙️ Use Case: UC7 – Addition with Target Unit Specification
 
 - Accepts two numerical values with their respective units and a target unit.
-- Adds them and returns the sum in the explicitly specified target unit.
+- Adds them and returns the sum in the `explicitly specified target unit`.
 
 ### ⚙️ Key Implementation Points (UC7 – Explicit Target Unit Addition)
 
-- Uses the same immutable Length class and LengthUnit enum.
-- Overloaded add() method:
-   - UC6: add(A, B) → result in the first operand’s unit.
-   - UC7: add(A, B, targetUnit) → result in explicitly specified unit.
-- Private utility method handles conversion → addition → target unit conversion.
+- Uses the same `immutable Length class` and LengthUnit enum.
+- Overloaded `add()` method:
+   - UC6: `add(A, B)` → result in the first operand’s unit.
+   - UC7: `add(A, B, targetUnit)` → result in explicitly specified unit.
+- Private utility method handles `conversion → addition → target` unit conversion.
 - Validation added: target unit must be non-null and valid.
 - Preserves immutability, precision, and commutativity.
 - Maintains backward compatibility with the UC6 addition.
 
 ---
+
+# Quantity Measurement App – UC8 (Standalone LengthUnit Refactoring)
+
+### 📌 Overview
+
+- This module refactors the `LengthUnit enum` to a `standalone`, `top-level class` with full responsibility for unit conversions.
+- QuantityLength is simplified to focus on value comparison and arithmetic, delegating all conversion logic to LengthUnit.
+- The change improves cohesion, eliminates circular dependencies, and establishes a scalable pattern for `multiple measurement categories`.
+
+### ⚙️ Use Case: UC8 – Refactoring Unit Enum to Standalone with Conversion Responsibility
+
+- `LengthUnit` manages all conversion logic (to/from base unit).
+- `QuantityLength` handles equality, addition, and arithmetic only.
+- Supports all functionality from UC1–UC7 without modifying client code.
+
+### ⚙️ Key Implementation Points
+
+- LengthUnit handles all unit conversion logic.
+- `QuantityLength` delegates conversions → focuses on comparisons/addition.
+- Methods:
+   - `convertToBaseUnit`(double value)
+   - `convertFromBaseUnit`(double baseValue)
+- Preserves immutability, precision, and commutativity.
+- `Public API` unchanged → `backward compatibility`.
+- Establishes scalable design pattern for other measurement categories.
+
+---
+
