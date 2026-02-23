@@ -112,6 +112,7 @@
 # Quantity Measurement App – UC5 (Unit-to-Unit Conversion)
 
 ### 📌 Overview
+
 - This module extends UC4 by adding `explicit unit-to-unit conversion support` to the Quantity Measurement App.
 - Instead of only `checking equality`, the `Length API` now allows `converting a measurement` from one unit to another using centralised conversion factors.
 - Supports conversion across `feet ↔ inches ↔ yards ↔ centimeters`.
@@ -140,4 +141,26 @@
 
 ---
 
+# Quantity Measurement App – UC6 (Addition of Two Length Units)
 
+### 📌 Overview
+
+- This module enables addition operations between two length measurements.
+- It supports adding lengths in the same or different units (within the length category) and returns the result in the unit of the first operand.
+- For example, adding 1 foot and 12 inches yields 2 feet.
+
+### ⚙️ Use Case: UC6 – Addition of Two Length Units (potentially different units)
+
+- Accepts two numerical values with their respective units.
+- Adds them and returns the sum in the unit of the first operand.
+
+### ⚙️ Key Concepts Learned
+
+- Addition of value objects with unit conversion.
+- Immutability and safe handling of operands.
+- Normalisation to a base unit for accurate arithmetic.
+- Floating-point precision management.
+- Commutativity and identity element behaviour.
+- Robust validation for null or invalid inputs.
+
+---
