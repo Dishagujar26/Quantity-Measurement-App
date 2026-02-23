@@ -362,7 +362,7 @@ public class QuantityMeasurementAppTest {
 
     @Test
     public void testAddition_ExplicitTargetUnit_NegativeValues() {
-        Length l1 = new Length(5.0, LengthUnit.FEET);
+        Length l1 = new  Length(5.0, LengthUnit.FEET);
         Length l2 = new Length(-2.0, LengthUnit.FEET);
 
         Length result = l1.add(l2, LengthUnit.INCHES);
