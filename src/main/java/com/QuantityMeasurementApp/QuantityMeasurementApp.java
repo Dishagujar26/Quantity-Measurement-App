@@ -17,9 +17,7 @@ public class QuantityMeasurementApp {
         return result;
     }
 	
-	public static <U extends IMeasurable> Quantity<U> demonstrateAddition(
-            Quantity<U> quantity1,
-            Quantity<U> quantity2) {
+	public static <U extends IMeasurable> Quantity<U> demonstrateAddition(Quantity<U> quantity1, Quantity<U> quantity2) {
 
         Quantity<U> result = quantity1.add(quantity2);
 
@@ -52,6 +50,15 @@ public class QuantityMeasurementApp {
 		
 		Quantity<WeightUnit> sumWeightInGrams = demonstrateAddition(weightInKilograms, weightInPounds, WeightUnit.GRAM );
 		System.out.println("Sum Weight in Grams: " + sumWeightInGrams.getValue() + " " + sumWeightInGrams.getUnit());
+		
+		Quantity<VolumeUnit> v1 = new Quantity<>(1.0, VolumeUnit.LITRE);
+		Quantity<VolumeUnit> v2 = new Quantity<>(1000.0, VolumeUnit.MILLILITRE);
+		Quantity<VolumeUnit> v3 = new Quantity<>(1.0, VolumeUnit.GALLON);
+
+		System.out.println(v1.equals(v2)); 
+		System.out.println(v1.convertTo(VolumeUnit.MILLILITRE)); 
+		System.out.println(v1.add(v2)); 
+		System.out.println(v3.convertTo(VolumeUnit.LITRE)); 
 	}
 }
 	
