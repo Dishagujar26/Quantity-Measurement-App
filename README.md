@@ -409,10 +409,6 @@
   - 
 ---
 
-Here is the **UC16 README section** written in the **same pattern and style as UC15**, but reflecting the **database persistence changes**.
-
----
-
 ### 📅 UC16: Database Persistence Layer Integration
 
 * **Description:**
