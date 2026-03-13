@@ -6,10 +6,10 @@ import com.quantitymeasurementapp.interfaces.IMeasurable;
 import com.quantitymeasurementapp.model.QuantityModel;
 import com.quantitymeasurementapp.quantity.Quantity;
 import com.quantitymeasurementapp.repository.IQuantityMeasurementRepository;
-import com.quantitymeasurementapp.units.LengthUnit;
-import com.quantitymeasurementapp.units.TemperatureUnit;
-import com.quantitymeasurementapp.units.VolumeUnit;
-import com.quantitymeasurementapp.units.WeightUnit;
+import com.quantitymeasurementapp.unit.LengthUnit;
+import com.quantitymeasurementapp.unit.TemperatureUnit;
+import com.quantitymeasurementapp.unit.VolumeUnit;
+import com.quantitymeasurementapp.unit.WeightUnit;
 
 public class QuantityMeasurementServiceImpl implements IQuantityMeasurementService {
 

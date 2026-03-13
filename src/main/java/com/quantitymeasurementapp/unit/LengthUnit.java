@@ -1,4 +1,4 @@
-package com.quantitymeasurementapp.units;
+package com.quantitymeasurementapp.unit;
 
 import com.quantitymeasurementapp.interfaces.IMeasurable;
 

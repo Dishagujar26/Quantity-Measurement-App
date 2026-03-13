@@ -10,7 +10,7 @@ import com.quantitymeasurementapp.repository.QuantityMeasurementCacheRepository;
 import com.quantitymeasurementapp.service.IQuantityMeasurementService;
 import com.quantitymeasurementapp.service.QuantityMeasurementServiceImpl;
 
-public class ControllerTest {
+public class QuantityMeasurementControllerTest {
 
 	private QuantityMeasurementController controller;
 

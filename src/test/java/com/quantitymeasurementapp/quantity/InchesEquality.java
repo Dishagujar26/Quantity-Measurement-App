@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
-import com.quantitymeasurementapp.units.LengthUnit;
+import com.quantitymeasurementapp.unit.LengthUnit;
 
 public class InchesEquality {
 
