@@ -1,6 +1,7 @@
 package com.app.quantitymeasurement.exception;
-
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -9,138 +10,94 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+/**
+ * Centralised exception handling for all REST controllers. Provides consistent,
+ * structured error responses for every exception type.
+ */
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    private static final Logger logger = Logger.getLogger(GlobalExceptionHandler.class.getName());
+	private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+	private static final String QME_ERROR = "Quantity Measurement Error";
 
-    /**
-     * Handles Bean Validation failures that arise when a {@code @Valid}-annotated
-     * request body fails its constraints.
-     *
-     * <p>All field-level error messages are collected and joined into a single
-     * {@code message} string so the client receives full feedback in one response.</p>
-     *
-     * @param ex      the validation exception
-     * @param request the current HTTP request (used for the {@code path} field)
-     * @return {@code 400 Bad Request} with a structured validation error body
-     */
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleMethodArgumentNotValidException(
-            MethodArgumentNotValidException ex,
-            HttpServletRequest request) {
+	// ── 1. Bean Validation failures (@Valid / @Validated) ─────────────────
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex,
+			HttpServletRequest request) {
 
-        String errorMessage = ex.getBindingResult().getFieldErrors().stream()
-            .map(FieldError::getDefaultMessage)
-            .collect(Collectors.joining("; "));
+		String messages = ex.getBindingResult().getFieldErrors().stream().map(FieldError::getDefaultMessage)
+				.collect(Collectors.joining("; "));
 
-        logger.warning("Validation failed: " + errorMessage);
+		logger.warn("Validation error on {}: {}", request.getRequestURI(), messages);
 
-        return ResponseEntity.badRequest().body(buildErrorBody(
-            HttpStatus.BAD_REQUEST.value(),
-            "Quantity Measurement Error",
-            errorMessage,
-            ex.getBindingResult().getObjectName()
-        ));
-    }
+		ErrorResponse error = new ErrorResponse(LocalDateTime.now(), HttpStatus.BAD_REQUEST.value(), QME_ERROR,
+				messages, request.getRequestURI());
 
-    /**
-     * Handles {@link QuantityMeasurementException} thrown by the service layer,
-     * for example when two quantities of incompatible types are compared or an
-     * unsupported arithmetic operation is attempted.
-     *
-     * @param ex      the quantity measurement exception
-     * @param request the current HTTP request
-     * @return {@code 400 Bad Request} with a structured error body
-     */
-    @ExceptionHandler(QuantityMeasurementException.class)
-    public ResponseEntity<Map<String, Object>> handleQuantityException(
-            QuantityMeasurementException ex,
-            HttpServletRequest request) {
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+	}
 
-        logger.warning("QuantityMeasurementException: " + ex.getMessage());
+	// ── 2. Domain / business rule violations ──────────────────────────────
+	@ExceptionHandler(QuantityMeasurementException.class)
+	public ResponseEntity<ErrorResponse> handleQuantityException(QuantityMeasurementException ex,
+			HttpServletRequest request) {
 
-        return ResponseEntity.badRequest().body(buildErrorBody(
-            HttpStatus.BAD_REQUEST.value(),
-            "Quantity Measurement Error",
-            ex.getMessage(),
-            request.getRequestURI()
-        ));
-    }
+		logger.warn("Quantity measurement error on {}: {}", request.getRequestURI(), ex.getMessage());
 
-    /**
-     * Handles {@link IllegalArgumentException} thrown when an invalid argument
-     * is passed to a service or utility method (e.g., an unrecognised unit name).
-     *
-     * @param ex      the exception
-     * @param request the current HTTP request
-     * @return {@code 400 Bad Request} with a structured error body
-     */
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, Object>> handleIllegalArgumentException(
-            IllegalArgumentException ex,
-            HttpServletRequest request) {
+		ErrorResponse error = new ErrorResponse(LocalDateTime.now(), HttpStatus.BAD_REQUEST.value(), QME_ERROR,
+				ex.getMessage(), request.getRequestURI());
 
-        logger.warning("IllegalArgumentException: " + ex.getMessage());
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+	}
 
-        return ResponseEntity.badRequest().body(buildErrorBody(
-            HttpStatus.BAD_REQUEST.value(),
-            "Quantity Measurement Error",
-            ex.getMessage(),
-            request.getRequestURI()
-        ));
-    }
+	// ── 3. Illegal arguments (bad enum names, null units, etc.) ───────────
+	@ExceptionHandler(IllegalArgumentException.class)
+	public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex,
+			HttpServletRequest request) {
 
-    /**
-     * Catch-all handler for any exception not covered by a more specific handler above.
-     * Ensures that unhandled errors always produce a structured response rather than
-     * an empty body or raw stack trace.
-     *
-     * @param ex      the unhandled exception
-     * @param request the current HTTP request
-     * @return {@code 500 Internal Server Error} with a structured error body
-     */
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleGlobalException(
-            Exception ex,
-            HttpServletRequest request) {
+		logger.warn("Illegal argument on {}: {}", request.getRequestURI(), ex.getMessage());
 
-        logger.severe("Unhandled exception: " + ex.getMessage());
+		ErrorResponse error = new ErrorResponse(LocalDateTime.now(), HttpStatus.BAD_REQUEST.value(), QME_ERROR,
+				ex.getMessage(), request.getRequestURI());
 
-        return ResponseEntity.internalServerError().body(buildErrorBody(
-            HttpStatus.INTERNAL_SERVER_ERROR.value(),
-            "Internal Server Error",
-            ex.getMessage(),
-            request.getRequestURI()
-        ));
-    }
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+	}
 
-    // -------------------------------------------------------------------------
-    // Private helpers
-    // -------------------------------------------------------------------------
+	// ── 4. Unsupported operations (Temperature arithmetic) ────────────────
+	@ExceptionHandler(UnsupportedOperationException.class)
+	public ResponseEntity<ErrorResponse> handleUnsupportedOperation(UnsupportedOperationException ex,
+			HttpServletRequest request) {
 
-    /**
-     * Builds the standardised error response map used by all handlers.
-     *
-     * @param status  HTTP status code
-     * @param error   short error category label
-     * @param message detailed error description
-     * @param path    request path that triggered the error
-     * @return map ready to be serialised as the JSON response body
-     */
-    private Map<String, Object> buildErrorBody(int status, String error,
-                                               String message, String path) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now().toString());
-        body.put("status",    status);
-        body.put("error",     error);
-        body.put("message",   message);
-        body.put("path",      path);
-        return body;
-    }
+		logger.warn("Unsupported operation on {}: {}", request.getRequestURI(), ex.getMessage());
+
+		ErrorResponse error = new ErrorResponse(LocalDateTime.now(), HttpStatus.BAD_REQUEST.value(), QME_ERROR,
+				ex.getMessage(), request.getRequestURI());
+
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+	}
+
+	// ── 5. Arithmetic errors (divide by zero) ─────────────────────────────
+	@ExceptionHandler(ArithmeticException.class)
+	public ResponseEntity<ErrorResponse> handleArithmeticException(ArithmeticException ex, HttpServletRequest request) {
+
+		logger.error("Arithmetic error on {}: {}", request.getRequestURI(), ex.getMessage());
+
+		ErrorResponse error = new ErrorResponse(LocalDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR.value(),
+				"Internal Server Error", ex.getMessage(), request.getRequestURI());
+
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+	}
+
+	// ── 6. Catch-all for any other exception ──────────────────────────────
+	@ExceptionHandler(Exception.class)
+	public ResponseEntity<ErrorResponse> handleGlobalException(Exception ex, HttpServletRequest request) {
+
+		logger.error("Unexpected error on {}: {}", request.getRequestURI(), ex.getMessage(), ex);
+
+		ErrorResponse error = new ErrorResponse(LocalDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR.value(),
+				"Internal Server Error", ex.getMessage(), request.getRequestURI());
+
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+	}
 }

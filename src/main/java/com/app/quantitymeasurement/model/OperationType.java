@@ -1,22 +1,30 @@
 package com.app.quantitymeasurement.model;
-
+/**
+ * Represents the type of operation performed on quantities.
+ */
 public enum OperationType {
 
-    /** Adds two quantities together. */
-    ADD,
+	ADD("add"), SUBTRACT("subtract"), MULTIPLY("multiply"), DIVIDE("divide"), COMPARE("compare"), CONVERT("convert");
 
-    /** Subtracts one quantity from another. */
-    SUBTRACT,
+	private final String displayName;
 
-    /** Multiplies two quantities (reserved for future use). */
-    MULTIPLY,
+	OperationType(String displayName) {
+		this.displayName = displayName;
+	}
 
-    /** Divides one quantity by another, returning the dimensionless ratio. */
-    DIVIDE,
+	public String getDisplayName() {
+		return displayName;
+	}
 
-    /** Compares two quantities for equality after base-unit conversion. */
-    COMPARE,
-
-    /** Converts a quantity from one unit to another within the same category. */
-    CONVERT
+	/**
+	 * Case-insensitive lookup.
+	 */
+	public static OperationType fromString(String value) {
+		for (OperationType type : values()) {
+			if (type.name().equalsIgnoreCase(value) || type.displayName.equalsIgnoreCase(value)) {
+				return type;
+			}
+		}
+		throw new IllegalArgumentException("Unknown operation type: " + value);
+	}
 }

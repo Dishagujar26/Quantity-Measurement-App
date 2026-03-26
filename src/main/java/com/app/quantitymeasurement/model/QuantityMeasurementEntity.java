@@ -1,221 +1,105 @@
 package com.app.quantitymeasurement.model;
-
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
+/**
+ * JPA entity mapped to the quantity_measurement_entity table. Lombok generates
+ * all boilerplate; Spring Data auditing handles timestamps.
+ */
 @Entity
-@Table(name = "quantity_measurement")
+@Table(name = "quantity_measurement_entity", indexes = { @Index(name = "idx_operation", columnList = "operation"),
+		@Index(name = "idx_mtype", columnList = "this_measurement_type"),
+		@Index(name = "idx_is_error", columnList = "is_error"),
+		@Index(name = "idx_created_at", columnList = "created_at") })
+@EntityListeners(AuditingEntityListener.class)
 @Data
-@EqualsAndHashCode(of = {"thisValue", "thisUnit", "thatValue", "thatUnit", "operation"})
 @NoArgsConstructor
-public class QuantityMeasurementEntity implements Serializable {
+@AllArgsConstructor
+public class QuantityMeasurementEntity {
 
-    private static final long serialVersionUID = 1L;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    /** Auto-generated primary key. Uses the IDENTITY strategy for H2 and MySQL. */
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	// ── First operand ─────────────────────────────────────────────────────
+	@Column(name = "this_value", nullable = false)
+	private double thisValue;
 
-    // -------------------------------------------------------------------------
-    // First operand
-    // -------------------------------------------------------------------------
+	@Column(name = "this_unit", nullable = false, length = 50)
+	private String thisUnit;
 
-    @Column(name = "this_value")
-    private Double thisValue;
+	@Column(name = "this_measurement_type", nullable = false, length = 50)
+	private String thisMeasurementType;
 
-    @Column(name = "this_unit")
-    private String thisUnit;
+	// ── Second operand (nullable for unary ops like convert) ──────────────
+	@Column(name = "that_value")
+	private Double thatValue;
 
-    @Column(name = "this_measurement_type")
-    private String thisMeasurementType;
+	@Column(name = "that_unit", length = 50)
+	private String thatUnit;
 
-    // -------------------------------------------------------------------------
-    // Second operand
-    // -------------------------------------------------------------------------
+	@Column(name = "that_measurement_type", length = 50)
+	private String thatMeasurementType;
 
-    @Column(name = "that_value")
-    private Double thatValue;
+	// ── Operation ─────────────────────────────────────────────────────────
+	@Column(name = "operation", nullable = false, length = 20)
+	private String operation;
 
-    @Column(name = "that_unit")
-    private String thatUnit;
+	// ── Result ────────────────────────────────────────────────────────────
+	@Column(name = "result_value")
+	private Double resultValue;
 
-    @Column(name = "that_measurement_type")
-    private String thatMeasurementType;
+	@Column(name = "result_unit", length = 50)
+	private String resultUnit;
 
-    // -------------------------------------------------------------------------
-    // Operation
-    // -------------------------------------------------------------------------
+	@Column(name = "result_measurement_type", length = 50)
+	private String resultMeasurementType;
 
-    /**
-     * Operation type in lowercase (e.g., {@code "compare"}, {@code "add"}).
-     */
-    @Column(name = "operation")
-    private String operation;
+	@Column(name = "result_string", length = 255)
+	private String resultString;
 
-    // -------------------------------------------------------------------------
-    // Result
-    // -------------------------------------------------------------------------
+	// ── Error tracking ────────────────────────────────────────────────────
+	@Column(name = "is_error")
+	private boolean error;
 
-    /** Numeric result for arithmetic and conversion operations; {@code null} for compare. */
-    @Column(name = "result_value")
-    private Double resultValue;
+	@Column(name = "error_message", length = 500)
+	private String errorMessage;
 
-    /** Unit of the result quantity; {@code null} for compare and divide. */
-    @Column(name = "result_unit")
-    private String resultUnit;
+	// ── Audit timestamps ──────────────────────────────────────────────────
+	@CreatedDate
+	@Column(name = "created_at", updatable = false)
+	private LocalDateTime createdAt;
 
-    /** Measurement category of the result; {@code null} for compare and divide. */
-    @Column(name = "result_measurement_type")
-    private String resultMeasurementType;
+	@LastModifiedDate
+	@Column(name = "updated_at")
+	private LocalDateTime updatedAt;
 
-    /**
-     * String result for compare operations ({@code "true"} or {@code "false"}).
-     * {@code null} for all other operations.
-     */
-    @Column(name = "result_string")
-    private String resultString;
+	/**
+	 * Convenience constructor (without id and audit fields) used by service layer.
+	 */
+	public QuantityMeasurementEntity(double thisValue, String thisUnit, String thisMeasurementType, Double thatValue,
+			String thatUnit, String thatMeasurementType, String operation, Double resultValue, String resultUnit,
+			String resultMeasurementType, String resultString, boolean error, String errorMessage) {
 
-    // -------------------------------------------------------------------------
-    // Error
-    // -------------------------------------------------------------------------
-
-    /** {@code true} when the operation failed and was not completed successfully. */
-    @Column(name = "is_error")
-    private boolean error;
-
-    /** Error description when {@code error} is {@code true}; {@code null} otherwise. */
-    @Column(name = "error_message", length = 1000)
-    private String errorMessage;
-
-    // -------------------------------------------------------------------------
-    // Audit
-    // -------------------------------------------------------------------------
-
-    /** Timestamp set automatically when the record is first persisted. */
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    /**
-     * Sets {@code createdAt} immediately before the entity is inserted into the database.
-     */
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-    }
-
-    // -------------------------------------------------------------------------
-    // Model-based constructors
-    // -------------------------------------------------------------------------
-
-    /**
-     * Creates a record for a compare or convert operation whose result is a string.
-     *
-     * @param thisQuantity first operand
-     * @param thatQuantity second operand
-     * @param operation    operation name (e.g., {@code "compare"})
-     * @param result       string result (e.g., {@code "true"}, {@code "false"})
-     */
-    public QuantityMeasurementEntity(
-            QuantityModel<com.app.quantitymeasurement.unit.IMeasurable> thisQuantity,
-            QuantityModel<com.app.quantitymeasurement.unit.IMeasurable> thatQuantity,
-            String operation,
-            String result) {
-        this(thisQuantity, thatQuantity, operation);
-        this.resultString = result;
-    }
-
-    /**
-     * Creates a record for an arithmetic operation whose result is a {@link QuantityModel}.
-     *
-     * @param thisQuantity first operand
-     * @param thatQuantity second operand
-     * @param operation    operation name (e.g., {@code "add"})
-     * @param result       result quantity carrying value, unit, and measurement type
-     */
-    public QuantityMeasurementEntity(
-            QuantityModel<com.app.quantitymeasurement.unit.IMeasurable> thisQuantity,
-            QuantityModel<com.app.quantitymeasurement.unit.IMeasurable> thatQuantity,
-            String operation,
-            QuantityModel<com.app.quantitymeasurement.unit.IMeasurable> result) {
-        this(thisQuantity, thatQuantity, operation);
-        this.resultValue            = result.getValue();
-        this.resultUnit             = result.getUnit().getUnitName();
-        this.resultMeasurementType  = result.getUnit().getMeasurementType();
-    }
-
-    /**
-     * Creates an error record for a failed operation.
-     *
-     * @param thisQuantity first operand
-     * @param thatQuantity second operand
-     * @param operation    operation that failed
-     * @param errorMessage description of the failure
-     * @param isError      must be {@code true}; included for explicitness at call sites
-     */
-    public QuantityMeasurementEntity(
-            QuantityModel<com.app.quantitymeasurement.unit.IMeasurable> thisQuantity,
-            QuantityModel<com.app.quantitymeasurement.unit.IMeasurable> thatQuantity,
-            String operation,
-            String errorMessage,
-            boolean isError) {
-        this(thisQuantity, thatQuantity, operation);
-        this.errorMessage = errorMessage;
-        this.error        = isError;
-    }
-
-    /**
-     * Base constructor shared by all model-based constructors.
-     * Populates operand fields and validates that neither operand is null.
-     *
-     * @param thisQuantity first operand
-     * @param thatQuantity second operand
-     * @param operation    operation name
-     * @throws IllegalArgumentException if either operand is {@code null}
-     */
-    public QuantityMeasurementEntity(
-            QuantityModel<com.app.quantitymeasurement.unit.IMeasurable> thisQuantity,
-            QuantityModel<com.app.quantitymeasurement.unit.IMeasurable> thatQuantity,
-            String operation) {
-        if (thisQuantity == null || thatQuantity == null) {
-            throw new IllegalArgumentException("Quantities cannot be null");
-        }
-        this.thisValue           = thisQuantity.getValue();
-        this.thisUnit            = thisQuantity.getUnit().getUnitName();
-        this.thisMeasurementType = thisQuantity.getUnit().getMeasurementType();
-        this.thatValue           = thatQuantity.getValue();
-        this.thatUnit            = thatQuantity.getUnit().getUnitName();
-        this.thatMeasurementType = thatQuantity.getUnit().getMeasurementType();
-        this.operation           = operation;
-    }
-
-    // -------------------------------------------------------------------------
-    // Object overrides
-    // -------------------------------------------------------------------------
-
-    /**
-     * Returns a human-readable description of this record for logging and debugging.
-     *
-     * @return formatted entity string
-     */
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(error ? "[ERROR] " : "[SUCCESS] ").append("operation=").append(operation);
-        sb.append(", operand1=").append(thisValue).append(" ").append(thisUnit);
-        sb.append(", operand2=").append(thatValue).append(" ").append(thatUnit);
-        if (error) {
-            sb.append(", message=").append(errorMessage);
-        } else if (resultString != null && !resultString.isEmpty()) {
-            sb.append(", result=").append(resultString);
-        } else {
-            sb.append(", result=").append(resultValue).append(" ").append(resultUnit);
-        }
-        return sb.toString();
-    }
+		this.thisValue = thisValue;
+		this.thisUnit = thisUnit;
+		this.thisMeasurementType = thisMeasurementType;
+		this.thatValue = thatValue;
+		this.thatUnit = thatUnit;
+		this.thatMeasurementType = thatMeasurementType;
+		this.operation = operation;
+		this.resultValue = resultValue;
+		this.resultUnit = resultUnit;
+		this.resultMeasurementType = resultMeasurementType;
+		this.resultString = resultString;
+		this.error = error;
+		this.errorMessage = errorMessage;
+	}
 }
