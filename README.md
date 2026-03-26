@@ -106,7 +106,7 @@ QuantityMeasurementServiceImpl
 
 **Key changes from UC16:**
 - Added `@Service` annotation — Spring registers and manages this bean
-- Added `@Autowired` — Spring injects repository automatically
+- Added `@Autowired` — Spring injects the repository automatically
 - All operation methods now return `QuantityMeasurementDTO` instead of raw `QuantityDTO`
 - Added 4 new history/count methods
 - `convertDtoToModel()` replaces old `QuantityMapper` dependency
@@ -172,7 +172,7 @@ QuantityMeasurementEntity  (JPA Entity)
 GlobalExceptionHandler  (@RestControllerAdvice)
 ```
 
-Centralized handler for all exceptions across all controllers:
+Centralised handler for all exceptions across all controllers:
 
 | Handler | Handles | HTTP Status |
 |---------|---------|-------------|
@@ -249,28 +249,6 @@ spring-boot-starter-test         <!-- MockMvc + SpringBootTest -->
 
 ---
 
-## 🧪 Testing
-
-### Unit Tests — MockMvc
-```
-@WebMvcTest(QuantityMeasurementController.class)
-```
-
-- Loads only the controller layer — no database needed
-- `@MockBean` mocks the service layer
-- Tests HTTP status codes, response JSON, validation failures
-
-### Integration Tests — Spring Boot Test
-```
-@SpringBootTest(webEnvironment = RANDOM_PORT)
-```
-
-- Starts the full application context
-- Uses `TestRestTemplate` to make real HTTP calls
-- Tests end-to-end: Controller → Service → Repository → H2 DB
-
----
-
 ## 🚀 How to Run
 ```bash
 # Build and compile
@@ -282,24 +260,6 @@ mvn test
 # Start Spring Boot application
 mvn spring-boot:run
 ```
-
----
-
-## 🌐 Access Points
-
-| URL | Description |
-|-----|-------------|
-| `http://localhost:8080/api/v1/quantities/compare` | Compare endpoint |
-| `http://localhost:8080/swagger-ui.html` | Interactive API documentation |
-| `http://localhost:8080/api-docs` | Raw OpenAPI JSON spec |
-| `http://localhost:8080/h2-console` | H2 Database console |
-| `http://localhost:8080/actuator/health` | Application health check |
-| `http://localhost:8080/actuator/metrics` | Application metrics |
-
-**H2 Console credentials:**
-- JDBC URL: `jdbc:h2:mem:quantitymeasurementdb`
-- Username: `sa`
-- Password: *(leave blank)*
 
 ---
 
