@@ -39,7 +39,7 @@ data/*.ser
 *.log
 
 # --- Environment / Secrets ---
-application-prod.properties
+application.properties
 *.env
 
 # --- Maven Wrapper & Docs ---
